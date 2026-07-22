@@ -57,8 +57,29 @@ app.post("/api/add-seedbulkdata", async (req, res) => {
   }
 });
 
-const PORT = 3001;
+async function getAllJobsDetail(){
+  try {
+    const jobs = await JobPost.find()
+    return jobs
+  } catch (error) {
+    throw error
+  }
+}
 
+app.get('/api/all-job', async (req,res) => {
+  try {
+    const jobs = await getAllJobsDetail()
+    if(jobs){
+      res.status(201).json({message: 'All jobs Detail is this', data: jobs})
+    }else{
+      res.status(404).json({error: 'Something went wrong in this apis'})
+    }
+  } catch (error) {
+    res.status(500).json({error: 'Failed to fetch Jobs data'})
+  }
+})
+
+const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server is running on this ${PORT}`);
 });
