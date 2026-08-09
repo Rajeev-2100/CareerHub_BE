@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-initializationDatabase();
+// Database will be initialized before server starts at the bottom
 
 
 async function createNewJobPost(newJobPost) {
@@ -192,8 +192,13 @@ app.put("/api/update-job/:jobId", async (req, res) => {
 });
 
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+initializationDatabase().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+}).catch((error) => {
+  console.error("Failed to start server due to database connection issue:", error);
+  process.exit(1);
 });
