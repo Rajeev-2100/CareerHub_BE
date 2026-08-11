@@ -5,11 +5,12 @@ const cors = require("cors");
 
 const app = express();
 
-app.use(cors());
+const corsOptions = {
+  origin: "*",
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
-
-// Database will be initialized before server starts at the bottom
-
 
 async function createNewJobPost(newJobPost) {
   try {
@@ -36,7 +37,6 @@ app.post("/api/add-job", async (req, res) => {
   }
 });
 
-
 async function seedingBulkData(bulkData) {
   try {
     return await JobPost.insertMany(bulkData);
@@ -56,11 +56,10 @@ app.post("/api/add-seedbulkdata", async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      error: error.message, 
+      error: error.message,
     });
   }
 });
-
 
 async function getAllJobsDetail() {
   try {
@@ -102,7 +101,7 @@ app.delete("/api/delete-job/:id", async (req, res) => {
 
     if (!deletedJob) {
       return res.status(404).json({
-        message: "Job not found", 
+        message: "Job not found",
       });
     }
 
@@ -112,7 +111,7 @@ app.delete("/api/delete-job/:id", async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      error: error.message, 
+      error: error.message,
     });
   }
 });
@@ -148,17 +147,12 @@ app.get("/api/get-job/:id", async (req, res) => {
   }
 });
 
-
 async function updateJobDetailById(jobId, updatedData) {
   try {
-    const updatedJob = await JobPost.findByIdAndUpdate(
-      jobId,
-      updatedData,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const updatedJob = await JobPost.findByIdAndUpdate(jobId, updatedData, {
+      new: true,
+      runValidators: true,
+    });
 
     return updatedJob;
   } catch (error) {
@@ -169,14 +163,11 @@ async function updateJobDetailById(jobId, updatedData) {
 
 app.put("/api/update-job/:jobId", async (req, res) => {
   try {
-    const updatedJob = await updateJobDetailById(
-      req.params.jobId,
-      req.body
-    );
+    const updatedJob = await updateJobDetailById(req.params.jobId, req.body);
 
     if (!updatedJob) {
       return res.status(404).json({
-        message: "Job not found", 
+        message: "Job not found",
       });
     }
 
@@ -186,19 +177,23 @@ app.put("/api/update-job/:jobId", async (req, res) => {
     });
   } catch (error) {
     res.status(500).json({
-      error: error.message, 
+      error: error.message,
     });
   }
 });
 
-
 const PORT = process.env.PORT || 3001;
 
-initializationDatabase().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+initializationDatabase()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error(
+      "Failed to start server due to database connection issue:",
+      error,
+    );
+    process.exit(1);
   });
-}).catch((error) => {
-  console.error("Failed to start server due to database connection issue:", error);
-  process.exit(1);
-});
